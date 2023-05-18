@@ -45,3 +45,52 @@ describe('Armrest.getModelCls', () => {
     expect(session.getModelCls(input)).toBe(output)
   })
 })
+
+describe('Armrest.removeFromCache', () => {
+  const session = new Armrest().model('Test').model('NestedTest')
+
+  test('remove nested list object', () => {
+    const test = new session.Test(
+      {
+        id: 'test1',
+        nested: [
+          {
+            id: 'nested2',
+            object: 'nested_test',
+          },
+        ],
+      },
+      session,
+    )
+
+    const nestedTest = new session.NestedTest({ id: 'nested2' })
+
+    expect(test.nested.length).toBe(1)
+    expect(test.nested[0]).toBe(nestedTest)
+
+    session.removeFromCache(nestedTest)
+
+    expect(test.nested.length).toBe(0)
+  })
+
+  test('remove nested object', () => {
+    const test = new session.Test(
+      {
+        id: 'test1',
+        nested: {
+          id: 'nested2',
+          object: 'nested_test',
+        },
+      },
+      session,
+    )
+
+    const nestedTest = new session.NestedTest({ id: 'nested2' })
+
+    expect(test.nested).toBe(nestedTest)
+
+    session.removeFromCache(nestedTest)
+
+    expect(test.nested).toBe(undefined)
+  })
+})

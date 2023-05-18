@@ -25,6 +25,6 @@ module.exports = {
     'operator-linebreak': 0,
     curly: [2, 'multi-or-nest', 'consistent'],
     'max-len': [2, { code: 100 }],
-    'nonblock-statement-body-position': [2, 'any']
+    'nonblock-statement-body-position': [2, 'any'],
   },
 }

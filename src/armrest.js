@@ -131,19 +131,35 @@ export default class Armrest {
     return cls
   }
 
-  toModel(obj) {
+  toModel(obj, parentRef = null) {
     const FoundModel = this.getModelCls(obj)
-    if (FoundModel) return new FoundModel(obj, this)
+    if (FoundModel) {
+      obj = new FoundModel(obj, this)
+      if (parentRef) this.addRefToCache(obj, parentRef)
+    }
     return obj
   }
 
   findInCache(obj) {
-    if (obj?.id in this.#objectCache) return this.#objectCache[obj.id]
+    if (obj?.id in this.#objectCache) return this.#objectCache[obj.id].obj
 
     return null
   }
 
   addToCache(obj) {
-    this.#objectCache[obj.id] = obj
+    this.#objectCache[obj.id] = { obj, refs: [] }
+  }
+
+  addRefToCache(obj, parentRef) {
+    this.#objectCache[obj.id]?.refs.push(parentRef)
+  }
+
+  removeFromCache(obj) {
+    const cache = this.#objectCache[obj.id]
+    delete this.#objectCache[obj.id]
+    cache.refs.forEach(([key, refObj]) => {
+      if (Array.isArray(refObj)) refObj.splice(key, 1)
+      else delete refObj[key]
+    })
   }
 }

@@ -1,9 +1,8 @@
 {
   "name": "armrest",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Node.js Armrest client library",
-  "main": "lib/armrest.js",
-  "types": "types/index.d.ts",
+  "main": "src/armrest.js",
   "type": "module",
   "scripts": {
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest"
@@ -22,13 +21,7 @@
     "axios": "^0.21.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.11.4",
-    "@babel/preset-env": "^7.11.0",
-    "@babel/preset-react": "^7.10.4",
     "@jest/globals": "^29.5.0",
-    "babel-plugin-transform-es2015-template-literals": "^6.22.0",
-    "babelify": "^10.0.0",
-    "core-js": "^3.6.5",
     "cross-env": "^7.0.3",
     "eslint": "^8.40.0",
     "eslint-config-airbnb-base": "^15.0.0",

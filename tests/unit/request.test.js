@@ -405,7 +405,7 @@ describe('handleResponse', () => {
       ],
     ],
   ])('test handleResponse valid', (response, output) => {
-    expect(handleResponse(session, response)).toStrictEqual(output)
+    expect(handleResponse('post', session, response)).toStrictEqual(output)
   })
 
   test.each([
@@ -465,7 +465,7 @@ describe('handleResponse', () => {
   ])('test handleResponse invalid', (response, error) => {
     if (typeof error === 'function') error = error(response)
 
-    expect(() => handleResponse(session, response)).toThrow(error)
+    expect(() => handleResponse('post', session, response)).toThrow(error)
   })
 })
 

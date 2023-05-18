@@ -6,9 +6,8 @@ function data2object(item, session) {
   Object.entries(item).forEach(([key, val]) => {
     if (!val || typeof val !== 'object') return
 
-    item[key] = data2object(val, session)
-
-    if (session.getModelCls(val)) item[key] = session.toModel(val)
+    if (session.getModelCls(val)) item[key] = session.toModel(val, [key, item])
+    data2object(item[key], session)
   })
 
   return item
@@ -30,7 +29,6 @@ export class ModelWrapper extends Function {
     Object.defineProperty(wrappedCls, 'spec', { value: Model.spec })
     Object.defineProperty(wrappedCls, 'prototype', { value: Model.prototype })
 
-    // eslint-disable-next-line no-constructor-return
     const proxy = new Proxy(wrappedCls, {
       get: (target, key, receiver) => {
         if (
@@ -88,9 +86,8 @@ export default class Model {
   }
 
   assign(data) {
-    if (this.session) data = data2object(data, this.session)
-
     Object.assign(this, data)
+    if (this.session) data2object(this, this.session)
   }
 
   data() {

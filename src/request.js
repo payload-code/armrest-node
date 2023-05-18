@@ -77,36 +77,44 @@ function buildSearchParams(
   return searchParams
 }
 
-function handleResponse(session, response) {
+function handleResponse(method, session, response) {
   const httpCode = response.status
 
-  let obj = response.data
-  if (typeof obj !== 'object') {
+  let { data } = response
+  if (typeof data !== 'object') {
     if (httpCode === 500) throw new InternalServerError()
     else throw new UnknownResponse()
   }
 
-  if (!obj.object)
+  if (!data.object)
     throw new UnknownResponse('Response missing "object" attribute')
 
   if (httpCode === 200) {
-    if (obj.object === 'list') return obj.values.map((o) => session.toModel(o))
+    if (data.object === 'list') {
+      data = data.values.map((o) => session.toModel(o))
+      if (method === 'delete')
+        data.values.forEach((o) => session.removeFromCache(o))
+    } else {
+      data = session.toModel(data)
+      if (method === 'delete') session.removeFromCache(data)
+    }
 
-    return session.toModel(obj)
+    return data
   }
+
   let BaseExc = ArmrestError
-  obj = session.toModel(obj)
+  data = session.toModel(data)
   Object.keys(exc).forEach((error) => {
     if (exc[error].httpCode !== httpCode) return
-    if (exc[error].name && exc[error].name !== obj.error_type) {
+    if (exc[error].name && exc[error].name !== data.error_type) {
       if (Object.getPrototypeOf(exc[error]) === ArmrestError)
         BaseExc = exc[error]
       return
     }
-    throw new exc[error](obj.error_description, obj)
+    throw new exc[error](data.error_description, data)
   })
 
-  throw new BaseExc(obj.error_description, obj)
+  throw new BaseExc(data.error_description, data)
 }
 
 export default class Request {
@@ -182,7 +190,7 @@ export default class Request {
         validateStatus: false,
       }).then((response) => {
         try {
-          resolve(handleResponse(this.#session, response))
+          resolve(handleResponse(method, this.#session, response))
         } catch (e) {
           reject(e)
         }
