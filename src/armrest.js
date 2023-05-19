@@ -1,11 +1,11 @@
 import Attr from './attr'
 import Request from './request'
 import Model, { ModelWrapper } from './model'
-import { ArmrestError } from './exceptions'
+import exc, { ArmrestError } from './exceptions'
 
 function toSnakeCase(s) {
   return s
-    .replace(/[a-z][A-Z][a-z]/g, (c) => `${c[0]}_${c.substr(1)}`)
+    .replace(/[a-zA-Z][A-Z][a-z]/g, (c) => `${c[0]}_${c.substr(1)}`)
     .toLowerCase()
 }
 
@@ -27,6 +27,9 @@ function Op(op) {
 }
 
 export default class Armrest {
+
+  static Model = Model
+
   #models
 
   #exceptions
@@ -43,15 +46,17 @@ export default class Armrest {
     this.attr = new Attr()
     this.and = Op('&&')
     this.or = Op('||')
+
+    this.register(exc)
   }
 
   Session(apiKey, apiUrl) {
     const session = new this.constructor(apiUrl || this.apiUrl)
     session.apiKey = apiKey || this.apiKey
 
-    Object.values(this.#models).forEach((model) => session.register(model))
+    Object.entries(this.#models).forEach(([name, model]) => session.register({[name]: model}))
 
-    Object.values(this.#exceptions).forEach((exc) => session.register(exc))
+    Object.entries(this.#exceptions).forEach(([name, exc]) => session.register({[name]: exc}))
 
     return session
   }
@@ -71,14 +76,10 @@ export default class Armrest {
         throw Error('Unknown type, must be string or class')
     }
 
-    if (!spec) spec = { object: toSnakeCase(name) }
+    if (spec)
+        cls.spec = {...cls.spec, ...spec}
 
-    Object.defineProperty(cls, 'name', { value: name })
-
-    if (cls.spec) Object.assign(spec, cls.spec)
-    Object.defineProperty(cls, 'spec', { value: spec })
-
-    this.register(cls)
+    this.register({[name]: cls})
     return this
   }
 
@@ -102,20 +103,45 @@ export default class Armrest {
     return this.requst().delete(...args)
   }
 
-  register(cls) {
-    if (cls.prototype instanceof Model) {
-      this.#models[cls.name] = cls
-      this[cls.name] = new ModelWrapper(cls, this)
-      return this
-    }
+  register(objects) {
+    Object.entries(objects).sort(([_a, a], [_b, b])=>{
+          const ap = Object.getPrototypeOf(a)
+          const bp = Object.getPrototypeOf(b)
 
-    if (cls.prototype instanceof ArmrestError) {
-      this.#exceptions[cls.name] = cls
-      this[cls.name] = cls
-      return this
-    }
+          if ( ap === Model && bp !== Model )
+            return -1;
+          if ( bp === Model && ap !== Model )
+            return 1;
+          return 0;
+      }).forEach(([name, cls])=> {
+        if (cls.prototype instanceof Model) {
+          const parentCls = Object.getPrototypeOf(cls)
 
-    throw Error('Unknown type')
+          Object.defineProperty(cls, 'name', { value: name })
+          cls.spec = {...cls.spec}
+          if (parentCls !== Model)
+            cls.spec = {...parentCls.spec, ...cls.spec}
+
+          if (!cls.spec.object)
+              cls.spec.object = toSnakeCase(name)
+
+          this.#models[name] = cls
+          this[name] = new ModelWrapper(cls, this)
+
+          return this
+        }
+
+        if (cls.prototype instanceof ArmrestError || cls == ArmrestError) {
+          Object.defineProperty(cls, 'name', { value: name })
+          this.#exceptions[name] = cls
+          this[name] = cls
+          return this
+        }
+
+        throw Error('Unknown type')
+    })
+
+    return this
   }
 
   getModelCls(obj) {

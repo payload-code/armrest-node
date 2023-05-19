@@ -101,6 +101,7 @@ describe('ModelWrapper', () => {
       true,
     )
     expect(new WrappedInstanceCheck() instanceof InstanceCheck).toBe(true)
+    expect(WrappedInstanceCheck() instanceof InstanceCheck).toBe(true)
   })
 
   test('attr', () => {

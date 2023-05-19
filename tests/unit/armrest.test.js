@@ -2,7 +2,7 @@ import Armrest from '../../src/armrest'
 import Model from '../../src/model'
 
 describe('Armrest.model', () => {
-  const session = new Armrest()
+  const session = new Armrest().model('Example')
 
   test.each([
     [['Test'], 'Test', { object: 'test' }],
@@ -25,6 +25,17 @@ describe('Armrest.model', () => {
       ],
       'Test',
       { polymorphic: { poly: true }, object: 'override' },
+    ],
+    [[session.Example], 'Example', { object: 'example' }],
+    [[class Test extends session.Example {}], 'Test', { object: 'example' }],
+    [
+      [
+        class Test extends session.Example {
+          static spec = { polymorphic: { poly: true } }
+        },
+      ],
+      'Test',
+      { polymorphic: { poly: true }, object: 'example' },
     ],
   ])('model valid', (args, name, spec) => {
     session.model(...args)

@@ -4,6 +4,10 @@
   "description": "Node.js Armrest client library",
   "main": "src/armrest.js",
   "type": "module",
+  "exports": {
+    ".": "./src/armrest.js",
+    "./exceptions": "./src/exceptions.js"
+  },
   "scripts": {
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest"
   },

@@ -23,13 +23,15 @@ function findObjectFromSelectFields(fields) {
 }
 
 function buildSearchParams(
-  params,
+  params = {},
   defaultParams,
   filters,
   qfilters,
   fields,
   groupBys,
   orderBys,
+  limit = null,
+  offset = null
 ) {
   Object.keys(filters)
     .filter((k) => !(k in params))
@@ -62,17 +64,24 @@ function buildSearchParams(
       })
   }
 
+  if (limit !== null)
+      params.limit = limit
+
+  if (offset !== null)
+      params.offset = offset
+
   const searchParams = new URLSearchParams()
-  Object.keys(params).forEach((k) => {
-    const v = params[k]
-    if (Array.isArray(v)) {
-      v.forEach((r) => {
-        searchParams.append(k, r)
+  if (params)
+      Object.keys(params).forEach((k) => {
+        const v = params[k]
+        if (Array.isArray(v)) {
+          v.forEach((r) => {
+            searchParams.append(k, r)
+          })
+        } else {
+          searchParams.append(k, v)
+        }
       })
-    } else {
-      searchParams.append(k, v)
-    }
-  })
 
   return searchParams
 }
@@ -128,6 +137,10 @@ export default class Request {
 
   #orderBys = []
 
+  #limit = null
+
+  #offset = null
+
   #session
 
   constructor(object, session) {
@@ -139,8 +152,8 @@ export default class Request {
     let path
 
     if (params.path) path = params.path
-    else if (this.object.endpoint) path = this.object.endpoint
-    else path = `/${this.object.object}s`
+    else if (this.object.spec.endpoint) path = this.object.spec.endpoint
+    else path = `/${this.object.spec.object}${this.object.spec.object.slice(-1) != 's' ? 's' : ''}`
 
     let url = this.#session.apiUrl + path
     const headers = {}
@@ -172,12 +185,14 @@ export default class Request {
 
     const searchParams = buildSearchParams(
       params.params,
-      this.object.default_params,
+      this.object.defaultParams,
       this.#filters,
       this.#qfilters,
       this.#fields,
       this.#groupBys,
       this.#orderBys,
+      this.#limit,
+      this.#offset,
     )
 
     return new Promise((resolve, reject) => {
@@ -186,7 +201,7 @@ export default class Request {
         url,
         params: searchParams,
         data: params.data,
-        headers: Object.assign(headers, this.constructor.default_headers ?? {}),
+        headers: Object.assign(headers, this.constructor.defaultHeaders ?? {}),
         validateStatus: false,
       }).then((response) => {
         try {
@@ -340,6 +355,16 @@ export default class Request {
 
   filter(...args) {
     this.#qfilters = this.#qfilters.concat(args)
+    return this
+  }
+
+  limit(val) {
+    this.#limit = val
+    return this
+  }
+
+  offset(val) {
+    this.#offset = val
     return this
   }
 

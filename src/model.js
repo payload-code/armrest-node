@@ -26,7 +26,7 @@ export class ModelWrapper extends Function {
     }
 
     Object.defineProperty(wrappedCls, 'name', { value: Model.name })
-    Object.defineProperty(wrappedCls, 'spec', { value: Model.spec })
+    Object.defineProperty(wrappedCls, 'spec', { value: Model.spec, writable: true })
     Object.defineProperty(wrappedCls, 'prototype', { value: Model.prototype })
 
     const proxy = new Proxy(wrappedCls, {
@@ -50,9 +50,9 @@ export class ModelWrapper extends Function {
 
         if (key === 'wrappedModel') return Model
 
-        if (!(key in target)) return new Attr(null, Model)[key]
+        if (!(key in Model)) return new Attr(null, Model)[key]
 
-        return Reflect.get(target, key, receiver)
+        return Reflect.get(Model, key, receiver)
       },
     })
 
@@ -63,6 +63,8 @@ export class ModelWrapper extends Function {
 
 export default class Model {
   static spec = {}
+  static defaultParams = null
+  static defaultHeaders = null
 
   constructor(obj, session = null) {
     const cachedObj = session?.findInCache(obj)

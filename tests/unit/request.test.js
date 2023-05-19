@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals'
 
-import Request, { testingExport } from '../../src/request'
 import Armrest from '../../src/armrest'
+import Request, { testingExport } from '../../src/request'
 import Model from '../../src/model'
 import Attr from '../../src/attr'
 import {
