@@ -43,14 +43,13 @@ await example.update({ test: 'changevalue' })
 
 ### Selecting Objects
 
-Objects can be selected using any of their attributes.
+Objects can be selected using any attribute.
 
 ```javascript
 const results = await api.select(api.Example).filterBy({ test: 'value' })
 ```
 
-Use the `pl.attr` attribute helper
-interface to write powerful queries with a little extra syntax sugar.
+Write complex queries using `filter`.
 
 ```javascript
 const results = api.Example.filter(
