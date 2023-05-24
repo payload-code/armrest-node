@@ -1,5 +1,5 @@
 {
-  "name": "armrest",
+  "name": "@armrest/client",
   "version": "0.1.0",
   "description": "Node.js Armrest client library",
   "main": "src/armrest.js",
