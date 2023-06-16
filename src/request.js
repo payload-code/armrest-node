@@ -369,6 +369,12 @@ export default class Request {
     return this
   }
 
+  range(start, end) {
+    this.#offset = start
+    this.#limit = end - start
+    return this
+  }
+
   all() {
     return this.send('get')
   }
