@@ -29,6 +29,7 @@
     "buffer": "^6.0.3"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.22.9",
     "@jest/globals": "^29.5.0",
     "cross-env": "^7.0.3",
     "esbuild": "^0.18.18",
