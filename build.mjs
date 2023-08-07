@@ -5,7 +5,7 @@ async function build(packageType) {
   const type = packageType === 'module' ? 'mjs' : 'cjs'
 
   const buildParams = {
-    entryPoints: ['src/armrest.js'],
+    entryPoints: ['src/armrest.js', 'src/exceptions.js'],
     bundle: true,
     sourcemap: true,
     minify: true,

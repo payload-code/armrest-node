@@ -1,6 +1,6 @@
 {
   "name": "@armrest/client",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Node.js Armrest client library",
   "main": "lib/cjs/armrest.js",
   "module": "lib/mjs/armrest.js",
@@ -8,6 +8,10 @@
     ".": {
       "import": "./lib/mjs/armrest.js",
       "require": "./lib/cjs/armrest.js"
+    },
+    "./exceptions": {
+      "import": "./lib/mjs/exceptions.js",
+      "require": "./lib/cjs/exceptions.js"
     }
   },
   "scripts": {
