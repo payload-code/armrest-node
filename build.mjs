@@ -1,34 +1,56 @@
 import esbuild from 'esbuild'
-import { promises as fs } from 'fs'
+import fs, { promises as fsp } from 'fs'
+import { transform } from 'sucrase'
+
+const entryPoints =  ['armrest.js', 'exceptions.js']
+
+async function cjsConvert() {
+  const mjsFiles = (await fsp.readdir('lib/mjs'))
+
+  mjsFiles.forEach(async function(file) {
+      const path = `lib/mjs/${file}`
+      const contents = (await fsp.readFile(path)).toString()
+
+      if (file.endsWith('.js')) {
+          const result = transform(contents, {
+            filePath: path,
+            transforms: ['imports'],
+            sourceMapOptions: {
+              compiledFilename: path,
+            }
+          })
+
+          await fsp.writeFile(`lib/cjs/${file}`, result.code)
+      } else if (file.endsWith('.map'))
+          await fsp.writeFile(`lib/cjs/${file}`, contents)
+
+  })
+}
 
 async function build(packageType) {
-  const type = packageType === 'module' ? 'mjs' : 'cjs'
 
   const buildParams = {
-    entryPoints: ['src/armrest.js', 'src/exceptions.js'],
+    entryPoints: entryPoints.map(e=>`src/${e}`),
     bundle: true,
     sourcemap: true,
     minify: true,
-    outdir: `lib/${type}`,
+    outdir: `lib/mjs`,
+    splitting: true,
+    format: 'esm',
+    target: ['esnext'],
   }
-
-  if (packageType === 'module') {
-    Object.assign(buildParams, {
-      format: 'esm',
-      target: ['esnext'],
-    })
-  } else if (packageType === 'commonjs') {
-    Object.assign(buildParams, {
-      platform: 'node',
-      target: ['node10.4'],
-    })
-  } else { throw Error('Unknown type') }
 
   await esbuild.build(buildParams)
 
-  await fs.writeFile(`lib/${type}/package.json`, `{"type": "${packageType}"}`)
+  if (!fs.existsSync('lib/cjs')){
+    fs.mkdirSync('lib/cjs')
+  }
+
+  await cjsConvert()
+
+  await fsp.writeFile(`lib/mjs/package.json`, `{"type": "module"}`)
+  await fsp.writeFile(`lib/cjs/package.json`, `{"type": "commonjs"}`)
 }
 
-build('module')
+build()
 
-build('commonjs')
