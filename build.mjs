@@ -2,7 +2,7 @@ import esbuild from 'esbuild'
 import { promises as fs } from 'fs'
 
 async function build(packageType) {
-  const type = packageType === 'module' ? 'esm' : 'cjs'
+  const type = packageType === 'module' ? 'mjs' : 'cjs'
 
   const buildParams = {
     entryPoints: ['src/armrest.js'],
