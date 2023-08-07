@@ -1,6 +1,7 @@
 import esbuild from 'esbuild'
 import fs, { promises as fsp } from 'fs'
 import { transform } from 'sucrase'
+import pkg from './package.json' assert { type: "json" }
 
 const entryPoints =  ['armrest.js', 'exceptions.js']
 
@@ -38,7 +39,8 @@ async function build(packageType) {
     splitting: true,
     format: 'esm',
     target: ['esnext'],
-    platform: 'node'
+    platform: 'node',
+    external: [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.peerDependencies || {})]
   }
 
   await esbuild.build(buildParams)
