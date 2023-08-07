@@ -210,6 +210,8 @@ export default class Request {
         } catch (e) {
           reject(e)
         }
+      }).catch(e=>{
+        reject(e)
       })
     })
   }

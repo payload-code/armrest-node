@@ -38,11 +38,12 @@ async function build(packageType) {
     splitting: true,
     format: 'esm',
     target: ['esnext'],
+    platform: 'node'
   }
 
   await esbuild.build(buildParams)
 
-  if (!fs.existsSync('lib/cjs')){
+  if (!fs.existsSync('lib/cjs')) {
     fs.mkdirSync('lib/cjs')
   }
 
