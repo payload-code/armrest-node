@@ -14,7 +14,6 @@ async function build(packageType) {
 
   if (packageType === 'module') {
     Object.assign(buildParams, {
-      splitting: true,
       format: 'esm',
       target: ['esnext'],
     })
