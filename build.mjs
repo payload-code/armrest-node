@@ -1,36 +1,35 @@
 import esbuild from 'esbuild'
-import fs from 'fs'
+import { promises as fs } from 'fs'
 
-esbuild
-    .build({
-        entryPoints: ['src/armrest.js'],
-        outdir: 'lib/esm',
-        bundle: true,
-        sourcemap: true,
-        minify: true,
-        splitting: true,
-        format: 'esm',
-        target: ['esnext']
+async function build(packageType) {
+  const type = packageType === 'module' ? 'esm' : 'cjs'
+
+  const buildParams = {
+    entryPoints: ['src/armrest.js'],
+    bundle: true,
+    sourcemap: true,
+    minify: true,
+    outdir: `lib/${type}`,
+  }
+
+  if (packageType === 'module') {
+    Object.assign(buildParams, {
+      splitting: true,
+      format: 'esm',
+      target: ['esnext'],
     })
-    .catch(() => process.exit(1));
-
-
-fs.writeFile('lib/esm/package.json', '{"type":"module"}', function (err) {
-  if (err) throw err;
-});
-
-esbuild
-    .build({
-        entryPoints: ['src/armrest.js'],
-        outdir: 'lib/cjs',
-        bundle: true,
-        sourcemap: true,
-        minify: true,
-        platform: 'node',
-        target: ['node10.4'],
+  } else if (packageType === 'commonjs') {
+    Object.assign(buildParams, {
+      platform: 'node',
+      target: ['node10.4'],
     })
-    .catch(() => process.exit(1));
+  } else { throw Error('Unknown type') }
 
-fs.writeFile('lib/cjs/package.json', '{"type":"commonjs"}', function (err) {
-  if (err) throw err;
-});
+  await esbuild.build(buildParams)
+
+  await fs.writeFile(`lib/${type}/package.json`, `{"type": "${packageType}"}`)
+}
+
+build('module')
+
+build('commonjs')

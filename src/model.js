@@ -63,7 +63,9 @@ export class ModelWrapper extends Function {
 
 export default class Model {
   static spec = {}
+
   static defaultParams = null
+
   static defaultHeaders = null
 
   constructor(obj, session = null) {

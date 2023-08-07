@@ -31,7 +31,7 @@ function buildSearchParams(
   groupBys,
   orderBys,
   limit = null,
-  offset = null
+  offset = null,
 ) {
   Object.keys(filters)
     .filter((k) => !(k in params))
@@ -65,23 +65,24 @@ function buildSearchParams(
   }
 
   if (limit !== null)
-      params.limit = limit
+    params.limit = limit
 
   if (offset !== null)
-      params.offset = offset
+    params.offset = offset
 
   const searchParams = new URLSearchParams()
-  if (params)
-      Object.keys(params).forEach((k) => {
-        const v = params[k]
-        if (Array.isArray(v)) {
-          v.forEach((r) => {
-            searchParams.append(k, r)
-          })
-        } else {
-          searchParams.append(k, v)
-        }
-      })
+  if (params) {
+    Object.keys(params).forEach((k) => {
+      const v = params[k]
+      if (Array.isArray(v)) {
+        v.forEach((r) => {
+          searchParams.append(k, r)
+        })
+      } else {
+        searchParams.append(k, v)
+      }
+    })
+  }
 
   return searchParams
 }
@@ -153,7 +154,7 @@ export default class Request {
 
     if (params.path) path = params.path
     else if (this.object.spec.endpoint) path = this.object.spec.endpoint
-    else path = `/${this.object.spec.object}${this.object.spec.object.slice(-1) != 's' ? 's' : ''}`
+    else path = `/${this.object.spec.object}${this.object.spec.object.slice(-1) !== 's' ? 's' : ''}`
 
     let url = this.#session.apiUrl + path
     const headers = {}
