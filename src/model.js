@@ -63,7 +63,9 @@ export class ModelWrapper extends Function {
 
 export default class Model {
   static spec = {}
+
   static defaultParams = null
+
   static defaultHeaders = null
 
   constructor(obj, session = null) {
@@ -120,8 +122,10 @@ export default class Model {
       .filterBy(this.spec.polymorphic || {})
   }
 
-  static create(obj, session) {
-    return new Request(this, session).create(obj)
+  static create(...args) {
+    const session = popSessionFromArgs(args)
+
+    return new Request(this, session).create(...args)
   }
 
   static select(...args) {
