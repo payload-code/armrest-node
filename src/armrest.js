@@ -66,7 +66,7 @@ export default class Armrest {
     switch (typeof cls) {
       case 'string':
         name = cls
-        cls = class extends Model {}
+        cls = class extends Model { }
         break
       case 'function':
         name = cls.name
@@ -99,7 +99,7 @@ export default class Armrest {
   }
 
   delete(...args) {
-    return this.requst().delete(...args)
+    return this.request().delete(...args)
   }
 
   register(objects) {
