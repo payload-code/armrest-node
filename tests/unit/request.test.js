@@ -1,4 +1,4 @@
-import { jest } from '@jest/globals'
+import { expe, testct, jest } from '@jest/globals'
 
 import Armrest from '../../src/armrest'
 import Request, { testingExport } from '../../src/request'
@@ -73,7 +73,7 @@ describe('Request.create', () => {
 })
 
 describe('Request.update', () => {
-  class OtherModel extends Model {}
+  class OtherModel extends Model { }
 
   test.each([
     [[{ test: 1 }], { data: { test: 1 }, params: { mode: 'query' } }],
@@ -157,7 +157,7 @@ describe('Request.update', () => {
 })
 
 describe('Request.delete', () => {
-  class OtherModel extends Model {}
+  class OtherModel extends Model { }
 
   test.each([
     [{ id: 1 }, null, { id: 1 }],
@@ -479,3 +479,21 @@ describe('findObjectFromSelectFields', () => {
     expect(findObjectFromSelectFields(input)).toBe(output)
   })
 })
+
+describe('Request.delete', () => {
+  const session = new Armrest();
+
+  test.each([
+    { input: undefined, expectedErrorMessage: 'Cannot perform delete' },
+  ])('delete method should be called', async ({ input, expectedErrorMessage }) => {
+    const spy = jest.spyOn(session, 'delete');
+
+    try {
+      await session.delete(input);
+    } catch (error) {
+      expect(error.message).toBe(expectedErrorMessage);
+    }
+
+    expect(spy).toHaveBeenCalled();
+  });
+});
