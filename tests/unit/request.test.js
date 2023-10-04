@@ -1,3 +1,4 @@
+import 'regenerator-runtime/runtime'
 import { expe, testct, jest } from '@jest/globals'
 
 import Armrest from '../../src/armrest'
