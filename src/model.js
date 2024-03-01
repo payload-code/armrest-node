@@ -146,7 +146,7 @@ export default class Model {
 
   static all(session) {
     return new Request(this, session)
-      .filter_by(this.spec.polymorphic || {})
+      .filterBy(this.spec.polymorphic || {})
       .all()
   }
 }
