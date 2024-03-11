@@ -26,7 +26,10 @@ export class ModelWrapper extends Function {
     }
 
     Object.defineProperty(wrappedCls, 'name', { value: Model.name })
-    Object.defineProperty(wrappedCls, 'spec', { value: Model.spec, writable: true })
+    Object.defineProperty(wrappedCls, 'spec', {
+      value: Model.spec,
+      writable: true,
+    })
     Object.defineProperty(wrappedCls, 'prototype', { value: Model.prototype })
 
     const proxy = new Proxy(wrappedCls, {

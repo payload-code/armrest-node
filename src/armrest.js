@@ -53,9 +53,13 @@ export default class Armrest {
     const session = new this.constructor(apiUrl || this.apiUrl)
     session.apiKey = apiKey || this.apiKey
 
-    Object.entries(this.#models).forEach(([name, obj]) => session.register({ [name]: obj }))
+    Object.entries(this.#models).forEach(([name, obj]) => {
+      session.register({ [name]: obj })
+    })
 
-    Object.entries(this.#exceptions).forEach(([name, obj]) => session.register({ [name]: obj }))
+    Object.entries(this.#exceptions).forEach(([name, obj]) => {
+      session.register({ [name]: obj })
+    })
 
     return session
   }
@@ -66,7 +70,7 @@ export default class Armrest {
     switch (typeof cls) {
       case 'string':
         name = cls
-        cls = class extends Model { }
+        cls = class extends Model {}
         break
       case 'function':
         name = cls.name
@@ -75,8 +79,7 @@ export default class Armrest {
         throw Error('Unknown type, must be string or class')
     }
 
-    if (spec)
-      cls.spec = { ...cls.spec, ...spec }
+    if (spec) cls.spec = { ...cls.spec, ...spec }
 
     this.register({ [name]: cls })
     return this
@@ -103,42 +106,40 @@ export default class Armrest {
   }
 
   register(objects) {
-    Object.entries(objects).sort(([_a, a], [_b, b]) => {
-      const ap = Object.getPrototypeOf(a)
-      const bp = Object.getPrototypeOf(b)
+    Object.entries(objects)
+      .sort((a, b) => {
+        const ap = Object.getPrototypeOf(a[1])
+        const bp = Object.getPrototypeOf(b[1])
 
-      if (ap === Model && bp !== Model)
-        return -1;
-      if (bp === Model && ap !== Model)
-        return 1;
-      return 0;
-    }).forEach(([name, cls]) => {
-      if (cls.prototype instanceof Model) {
-        const parentCls = Object.getPrototypeOf(cls)
+        if (ap === Model && bp !== Model) return -1
+        if (bp === Model && ap !== Model) return 1
+        return 0
+      })
+      .forEach(([name, cls]) => {
+        if (cls.prototype instanceof Model) {
+          const parentCls = Object.getPrototypeOf(cls)
 
-        Object.defineProperty(cls, 'name', { value: name })
-        cls.spec = { ...cls.spec }
-        if (parentCls !== Model)
-          cls.spec = { ...parentCls.spec, ...cls.spec }
+          Object.defineProperty(cls, 'name', { value: name })
+          cls.spec = { ...cls.spec }
+          if (parentCls !== Model) cls.spec = { ...parentCls.spec, ...cls.spec }
 
-        if (!cls.spec.object)
-          cls.spec.object = toSnakeCase(name)
+          if (!cls.spec.object) cls.spec.object = toSnakeCase(name)
 
-        this.#models[name] = cls
-        this[name] = new ModelWrapper(cls, this)
+          this.#models[name] = cls
+          this[name] = new ModelWrapper(cls, this)
 
-        return this
-      }
+          return this
+        }
 
-      if (cls.prototype instanceof ArmrestError || cls === ArmrestError) {
-        Object.defineProperty(cls, 'name', { value: name })
-        this.#exceptions[name] = cls
-        this[name] = cls
-        return this
-      }
+        if (cls.prototype instanceof ArmrestError || cls === ArmrestError) {
+          Object.defineProperty(cls, 'name', { value: name })
+          this.#exceptions[name] = cls
+          this[name] = cls
+          return this
+        }
 
-      throw Error('Unknown type')
-    })
+        throw Error('Unknown type')
+      })
 
     return this
   }
