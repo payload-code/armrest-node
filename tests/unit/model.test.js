@@ -70,7 +70,7 @@ describe('Model', () => {
       new Model(
         {
           id: 5,
-          create_at: new Date(2023, 5, 15, 0, 0, 0, 0),
+          create_at: new Date("2023-06-15T04:00:00.000+04:00"),
           nested: new PolyModel({ id: 6, list: [new Model({ id: 7 })] }),
         },
         session,
@@ -78,7 +78,7 @@ describe('Model', () => {
     ).toBe(
       `{
   "id": 5,
-  "create_at": "2023-06-15T04:00:00.000Z",
+  "create_at": "2023-06-15T00:00:00.000Z",
   "nested": {
     "poly": true,
     "id": 6,

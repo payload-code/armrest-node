@@ -26,7 +26,10 @@ export class ModelWrapper extends Function {
     }
 
     Object.defineProperty(wrappedCls, 'name', { value: Model.name })
-    Object.defineProperty(wrappedCls, 'spec', { value: Model.spec, writable: true })
+    Object.defineProperty(wrappedCls, 'spec', {
+      value: Model.spec,
+      writable: true,
+    })
     Object.defineProperty(wrappedCls, 'prototype', { value: Model.prototype })
 
     const proxy = new Proxy(wrappedCls, {
@@ -146,7 +149,7 @@ export default class Model {
 
   static all(session) {
     return new Request(this, session)
-      .filter_by(this.spec.polymorphic || {})
+      .filterBy(this.spec.polymorphic || {})
       .all()
   }
 }

@@ -23,7 +23,7 @@ function findObjectFromSelectFields(fields) {
 }
 
 function buildSearchParams(
-  params = {},
+  params,
   defaultParams,
   filters,
   qfilters,
@@ -33,6 +33,7 @@ function buildSearchParams(
   limit = null,
   offset = null,
 ) {
+  params = params ?? {}
   Object.keys(filters)
     .filter((k) => !(k in params))
     .forEach((k) => {
@@ -64,11 +65,9 @@ function buildSearchParams(
       })
   }
 
-  if (limit !== null)
-    params.limit = limit
+  if (limit !== null) params.limit = limit
 
-  if (offset !== null)
-    params.offset = offset
+  if (offset !== null) params.offset = offset
 
   const searchParams = new URLSearchParams()
   if (params) {
@@ -152,9 +151,15 @@ export default class Request {
   send(method, params = {}) {
     let path
 
-    if (params.path) path = params.path
-    else if (this.object.spec.endpoint) path = this.object.spec.endpoint
-    else path = `/${this.object.spec.object}${this.object.spec.object.slice(-1) !== 's' ? 's' : ''}`
+    if (params.path) {
+      path = params.path
+    } else if (this.object.spec.endpoint) {
+      path = this.object.spec.endpoint
+    } else {
+      path = `/${this.object.spec.object}${
+        this.object.spec.object.slice(-1) !== 's' ? 's' : ''
+      }`
+    }
 
     let url = this.#session.apiUrl + path
     const headers = {}
@@ -204,15 +209,17 @@ export default class Request {
         data: params.data,
         headers: Object.assign(headers, this.constructor.defaultHeaders ?? {}),
         validateStatus: false,
-      }).then((response) => {
-        try {
-          resolve(handleResponse(method, this.#session, response))
-        } catch (e) {
-          reject(e)
-        }
-      }).catch(e=>{
-        reject(e)
       })
+        .then((response) => {
+          try {
+            resolve(handleResponse(method, this.#session, response))
+          } catch (e) {
+            reject(e)
+          }
+        })
+        .catch((e) => {
+          reject(e)
+        })
     })
   }
 
