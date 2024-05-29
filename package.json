@@ -1,6 +1,6 @@
 {
   "name": "@armrest/client",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Node.js Armrest client library",
   "main": "lib/cjs/armrest.js",
   "module": "lib/mjs/armrest.js",
