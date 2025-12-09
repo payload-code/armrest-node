@@ -116,14 +116,14 @@ describe('Armrest.Session', () => {
 
   test('sets defaultHeaders when provided', () => {
     const customHeaders = { 'X-Custom-Header': 'value' }
-    const session = armrest.Session('test-key', undefined, { defaultHeaders: customHeaders })
+    const session = armrest.Session('test-key', { defaultHeaders: customHeaders })
     expect(session.defaultHeaders).toEqual(customHeaders)
   })
 
   test('merges defaultHeaders with parent defaultHeaders', () => {
     armrest.defaultHeaders = { 'X-Parent-Header': 'parent-value' }
     const customHeaders = { 'X-Custom-Header': 'value' }
-    const session = armrest.Session('test-key', undefined, { defaultHeaders: customHeaders })
+    const session = armrest.Session('test-key', { defaultHeaders: customHeaders })
     expect(session.defaultHeaders).toEqual({
       'X-Parent-Header': 'parent-value',
       'X-Custom-Header': 'value',
@@ -133,9 +133,15 @@ describe('Armrest.Session', () => {
   test('sets both apiUrl and defaultHeaders', () => {
     const customUrl = 'https://custom.example.com'
     const customHeaders = { 'X-Custom-Header': 'value' }
-    const session = armrest.Session('test-key', customUrl, { defaultHeaders: customHeaders })
+    const session = armrest.Session('test-key', { apiUrl: customUrl, defaultHeaders: customHeaders })
     expect(session.apiUrl).toBe(customUrl)
     expect(session.defaultHeaders).toEqual(customHeaders)
+  })
+
+  test('backward compatible with old Session(apiKey, apiUrl) signature', () => {
+    const customUrl = 'https://custom.example.com'
+    const session = armrest.Session('test-key', customUrl)
+    expect(session.apiUrl).toBe(customUrl)
   })
 
   test('uses base apiUrl when apiUrl not provided', () => {

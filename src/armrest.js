@@ -50,12 +50,25 @@ export default class Armrest {
     this.register(exc)
   }
 
-  Session(apiKey, apiUrl, options = {}) {
-    const session = new this.constructor(apiUrl || this.apiUrl)
+  Session(apiKey, options = {}) {
+    let { apiUrl } = this
+    let defaultHeaders = {}
+
+    if (typeof options === 'string') {
+      // Backward compatibility with old API: Session(apiKey, apiUrl)
+      apiUrl = options
+    } else if (typeof options === 'object') {
+      const { apiUrl: optionsApiUrl, defaultHeaders: optionsDefaultHeaders } =
+        options
+      apiUrl = optionsApiUrl || this.apiUrl
+      defaultHeaders = optionsDefaultHeaders ?? {}
+    }
+
+    const session = new this.constructor(apiUrl)
     session.apiKey = apiKey || this.apiKey
     session.defaultHeaders = {
       ...this.defaultHeaders,
-      ...(options.defaultHeaders ?? {}),
+      ...defaultHeaders,
     }
 
     Object.entries(this.#models).forEach(([name, obj]) => {

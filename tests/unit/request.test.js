@@ -516,7 +516,7 @@ describe('Request defaultHeaders', () => {
   })
 
   test('sets custom headers from session.defaultHeaders', async () => {
-    const session = new Armrest('https://api.example.com').Session('test-key', undefined, {
+    const session = new Armrest('https://api.example.com').Session('test-key', {
       defaultHeaders: {
         'X-Custom-Header': 'custom-value',
         'X-Another-Header': 'another-value',
@@ -540,7 +540,7 @@ describe('Request defaultHeaders', () => {
   test('merges constructor, Armrest and Session defaultHeaders in requests', async () => {
     const armrest = new Armrest('https://api.example.com')
     armrest.defaultHeaders = { 'X-Armrest-Header': 'armrest-value' }
-    const session = armrest.Session('test-key', undefined, {
+    const session = armrest.Session('test-key', {
       defaultHeaders: { 'X-Session-Header': 'session-value' },
     })
     session.model('Test')
@@ -563,7 +563,7 @@ describe('Request defaultHeaders', () => {
   test('Session defaultHeaders override Armrest defaultHeaders', async () => {
     const armrest = new Armrest('https://api.example.com')
     armrest.defaultHeaders = { 'X-Common-Header': 'armrest-value' }
-    const session = armrest.Session('test-key', undefined, {
+    const session = armrest.Session('test-key', {
       defaultHeaders: { 'X-Common-Header': 'session-value' },
     })
     session.model('Test')
@@ -583,12 +583,12 @@ describe('Request defaultHeaders', () => {
     const armrest = new Armrest('https://api.example.com')
     armrest.defaultHeaders = { 'X-Armrest-Header': 'armrest-value' }
 
-    const session1 = armrest.Session('test-key', undefined, {
+    const session1 = armrest.Session('test-key', {
       defaultHeaders: { 'X-Session1-Header': 'session1-value' },
     })
     session1.model('Test')
 
-    const session2 = armrest.Session('test-key', undefined, {
+    const session2 = armrest.Session('test-key', {
       defaultHeaders: { 'X-Session2-Header': 'session2-value' },
     })
     session2.model('Test')
