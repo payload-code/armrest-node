@@ -42,6 +42,7 @@ export default class Armrest {
 
     this.apiUrl = url
     this.apiKey = null
+    this.defaultHeaders = {}
     this.attr = new Attr()
     this.and = Op('&&')
     this.or = Op('||')
@@ -49,9 +50,13 @@ export default class Armrest {
     this.register(exc)
   }
 
-  Session(apiKey, apiUrl) {
+  Session(apiKey, apiUrl, options = {}) {
     const session = new this.constructor(apiUrl || this.apiUrl)
     session.apiKey = apiKey || this.apiKey
+    session.defaultHeaders = {
+      ...this.defaultHeaders,
+      ...(options.defaultHeaders ?? {}),
+    }
 
     Object.entries(this.#models).forEach(([name, obj]) => {
       session.register({ [name]: obj })

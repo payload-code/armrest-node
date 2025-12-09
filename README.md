@@ -24,7 +24,7 @@ import Armrest from '@armrest/client'
 const API = new Armrest('http://armrest-api-url')
   .model('Example')
 
-const api = API('api-key')
+const api = API.Session('api-key')
 ```
 
 ### Creating an Object
