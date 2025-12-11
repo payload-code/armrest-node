@@ -1,4 +1,3 @@
-// import 'regenerator-runtime/runtime'
 import { jest } from '@jest/globals'
 import axios from 'axios'
 
