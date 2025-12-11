@@ -1,5 +1,5 @@
-import 'regenerator-runtime/runtime'
 import { jest } from '@jest/globals'
+import axios from 'axios'
 
 import Armrest from '../../src/armrest'
 import Request, { testingExport } from '../../src/request'
@@ -12,6 +12,8 @@ import {
   UnknownResponse,
   ArmrestError,
 } from '../../src/exceptions'
+
+jest.mock('axios')
 
 const { buildSearchParams, handleResponse, findObjectFromSelectFields } =
   testingExport
@@ -74,7 +76,7 @@ describe('Request.create', () => {
 })
 
 describe('Request.update', () => {
-  class OtherModel extends Model { }
+  class OtherModel extends Model {}
 
   test.each([
     [[{ test: 1 }], { data: { test: 1 }, params: { mode: 'query' } }],
@@ -158,7 +160,7 @@ describe('Request.update', () => {
 })
 
 describe('Request.delete', () => {
-  class OtherModel extends Model { }
+  class OtherModel extends Model {}
 
   test.each([
     [{ id: 1 }, null, { id: 1 }],
@@ -482,19 +484,160 @@ describe('findObjectFromSelectFields', () => {
 })
 
 describe('Request.delete', () => {
-  const session = new Armrest();
+  const session = new Armrest()
 
   test.each([
     { input: undefined, expectedErrorMessage: 'Cannot perform delete' },
-  ])('delete method should be called', async ({ input, expectedErrorMessage }) => {
-    const spy = jest.spyOn(session, 'delete');
+  ])(
+    'delete method should be called',
+    async ({ input, expectedErrorMessage }) => {
+      const spy = jest.spyOn(session, 'delete')
 
-    try {
-      await session.delete(input);
-    } catch (error) {
-      expect(error.message).toBe(expectedErrorMessage);
-    }
+      try {
+        await session.delete(input)
+      } catch (error) {
+        expect(error.message).toBe(expectedErrorMessage)
+      }
 
-    expect(spy).toHaveBeenCalled();
-  });
-});
+      expect(spy).toHaveBeenCalled()
+    },
+  )
+})
+
+describe('Request defaultHeaders', () => {
+  beforeEach(() => {
+    axios.mockResolvedValue({
+      status: 200,
+      data: { object: 'test', id: 'test-id' },
+    })
+  })
+
+  afterEach(() => {
+    jest.clearAllMocks()
+    Request.defaultHeaders = undefined
+  })
+
+  test('sets custom headers from session.defaultHeaders', async () => {
+    const session = new Armrest('https://api.example.com').Session('test-key', {
+      defaultHeaders: {
+        'X-Custom-Header': 'custom-value',
+        'X-Another-Header': 'another-value',
+      },
+    })
+    session.model('Test')
+
+    await session.Test.get('test-id')
+
+    expect(axios).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'X-Custom-Header': 'custom-value',
+          'X-Another-Header': 'another-value',
+        }),
+      }),
+    )
+  })
+
+  test('merges constructor, Armrest and Session defaultHeaders in requests', async () => {
+    const armrest = new Armrest('https://api.example.com')
+    armrest.defaultHeaders = { 'X-Armrest-Header': 'armrest-value' }
+    const session = armrest.Session('test-key', {
+      defaultHeaders: { 'X-Session-Header': 'session-value' },
+    })
+    session.model('Test')
+
+    Request.defaultHeaders = { 'X-Constructor-Header': 'constructor-value' }
+
+    await session.Test.get('test-id')
+
+    expect(axios).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'X-Constructor-Header': 'constructor-value',
+          'X-Armrest-Header': 'armrest-value',
+          'X-Session-Header': 'session-value',
+        }),
+      }),
+    )
+  })
+
+  test('Session defaultHeaders override Armrest defaultHeaders', async () => {
+    const armrest = new Armrest('https://api.example.com')
+    armrest.defaultHeaders = { 'X-Common-Header': 'armrest-value' }
+    const session = armrest.Session('test-key', {
+      defaultHeaders: { 'X-Common-Header': 'session-value' },
+    })
+    session.model('Test')
+
+    await session.Test.get('test-id')
+
+    expect(axios).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'X-Common-Header': 'session-value',
+        }),
+      }),
+    )
+  })
+
+  test('sessions inherit Armrest defaultHeaders, add their own, and are isolated from each other', async () => {
+    const armrest = new Armrest('https://api.example.com')
+    armrest.defaultHeaders = { 'X-Armrest-Header': 'armrest-value' }
+
+    const session1 = armrest.Session('test-key', {
+      defaultHeaders: { 'X-Session1-Header': 'session1-value' },
+    })
+    session1.model('Test')
+
+    const session2 = armrest.Session('test-key', {
+      defaultHeaders: { 'X-Session2-Header': 'session2-value' },
+    })
+    session2.model('Test')
+
+    await session1.Test.get('test-id')
+    await session2.Test.get('test-id')
+
+    expect(axios).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'X-Armrest-Header': 'armrest-value',
+          'X-Session1-Header': 'session1-value',
+        }),
+      }),
+    )
+    const call1Args = axios.mock.calls[0][0]
+    expect(call1Args.headers).not.toHaveProperty('X-Session2-Header')
+
+    expect(axios).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'X-Armrest-Header': 'armrest-value',
+          'X-Session2-Header': 'session2-value',
+        }),
+      }),
+    )
+    const call2Args = axios.mock.calls[1][0]
+    expect(call2Args.headers).not.toHaveProperty('X-Session1-Header')
+  })
+
+  test('works correctly when neither Armrest nor Session have defaultHeaders', async () => {
+    const armrest = new Armrest('https://api.example.com')
+    const session = armrest.Session('test-key')
+    session.model('Test')
+
+    await session.Test.get('test-id')
+
+    expect(axios).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: expect.any(String),
+        }),
+      }),
+    )
+
+    const callArgs = axios.mock.calls[0][0]
+    expect(Object.keys(callArgs.headers)).toEqual(['Authorization'])
+  })
+})

@@ -162,7 +162,11 @@ export default class Request {
     }
 
     let url = this.#session.apiUrl + path
-    const headers = {}
+
+    const headers = {
+      ...(this.constructor.defaultHeaders ?? {}),
+      ...(this.#session.defaultHeaders ?? {}),
+    }
 
     if (params.id) url += `/${params.id}`
 
@@ -207,7 +211,7 @@ export default class Request {
         url,
         params: searchParams,
         data: params.data,
-        headers: Object.assign(headers, this.constructor.defaultHeaders ?? {}),
+        headers,
         validateStatus: false,
       })
         .then((response) => {
