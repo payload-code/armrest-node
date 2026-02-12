@@ -23,6 +23,7 @@ describe('Attr', () => {
       attr.someattr.nestedattr.somemethod().eq('testval'),
       { 'somemethod(someattr[nestedattr])': 'testval' },
     ],
+    // [attr.someattr.length().gt(100), { 'length(someattr)': '>100' }], TODO: not working
   ])('test attr conditionals', (input, output) => {
     expect(input.toParam()).toStrictEqual(output)
   })
