@@ -411,6 +411,28 @@ describe('handleResponse', () => {
     expect(handleResponse('post', session, response)).toStrictEqual(output)
   })
 
+  test('delete method with list response calls removeFromCache on each item', () => {
+    const mockSession = new Armrest().model('Test')
+    const removeFromCache = jest.spyOn(mockSession, 'removeFromCache').mockImplementation()
+
+    const response = {
+      status: 200,
+      data: {
+        object: 'list',
+        values: [{ object: 'test', id: '1' }, { object: 'test', id: '2' }],
+      },
+    }
+
+    const result = handleResponse('delete', mockSession, response)
+
+    expect(result).toHaveLength(2)
+    expect(removeFromCache).toHaveBeenCalledTimes(2)
+    expect(removeFromCache).toHaveBeenCalledWith(result[0])
+    expect(removeFromCache).toHaveBeenCalledWith(result[1])
+
+    removeFromCache.mockRestore()
+  })
+
   test.each([
     [
       {

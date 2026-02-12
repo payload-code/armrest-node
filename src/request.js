@@ -101,8 +101,7 @@ function handleResponse(method, session, response) {
   if (httpCode === 200) {
     if (data.object === 'list') {
       data = data.values.map((o) => session.toModel(o))
-      if (method === 'delete')
-        data.values.forEach((o) => session.removeFromCache(o))
+      if (method === 'delete') data.forEach((o) => session.removeFromCache(o))
     } else {
       data = session.toModel(data)
       if (method === 'delete') session.removeFromCache(data)

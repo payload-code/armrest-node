@@ -7,7 +7,7 @@ function data2object(item, session) {
     if (!val || typeof val !== 'object') return
 
     if (session.getModelCls(val)) item[key] = session.toModel(val, [key, item])
-    data2object(item[key], session)
+    else data2object(item[key], session)
   })
 
   return item
